@@ -105,10 +105,36 @@ handler._cheack.post = (requestProperties, callBack) => {
     });
   } else callBack(400, { msg: "you have a error in your request1" });
 };
-handler._cheack.get = (requestProperties, callBack) => {};
+handler._cheack.get = (requestProperties, callBack) => {
+  const id =
+    typeof requestProperties.query.id === "string" &&
+    requestProperties.query.id.trim().length === 20
+      ? requestProperties.query.id
+      : false;
+
+  if (id) {
+    data.read("checks", id, (err, checkData) => {
+      const newCheackdata=parseJSON(checkData);
+      const userPhone=newCheackdata.userPhone;
+      if (!err && checkData) {
+        const token =
+          typeof requestProperties.headerobject.token === "string"
+            ? requestProperties.headerobject.token
+            : false;
+            _token.verify(token,userPhone,(tokenstutus)=>{
+              if(tokenstutus)
+                {
+                  callBack(403, newCheackdata);
+                }
+                else callBack(403, { msg: "User Authentication error" });
+            })
+      } else callBack(500, { msg: "there was a problem in server side!" });
+    });
+  } else callBack(400, { msg: "you have a error in your request1" });
+};
 
 handler._cheack.put = (requestProperties, callBack) => {};
-// @TODO Authentication
+
 handler._cheack.delete = (requestProperties, callBack) => {};
 
 module.exports = handler;
